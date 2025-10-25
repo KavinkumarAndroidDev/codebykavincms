@@ -7,9 +7,7 @@ import { getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection, q
 // Setting Firebase log level for debugging
 setLogLevel('Debug');
 
-// Global variables MUST be present in the environment. Using fallbacks just in case.
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'codebykavin'; // Align with projectId for consistency
-
 const firebaseConfig = {
   apiKey: "%%FIREBASE_API_KEY%%",
   authDomain: "%%FIREBASE_AUTH_DOMAIN%%",
