@@ -19,6 +19,7 @@ const firebaseConfig = {
 
 
 
+
 let app, db, auth, storage;
 let isAuthReady = false;
 let isAuthenticatedAdmin = false; // Flag for UI control
