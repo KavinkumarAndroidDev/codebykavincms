@@ -1,0 +1,73 @@
+/* Define the CodeByKavin Color Palette and Typography */
+:root {
+    --bg-primary: #0F111A;
+    --card-bg: #1E1E2F;
+    --accent-blue: #4AC0FF;
+    --accent-yellow: #FFD166;
+    --text-primary: #E6E6E6;
+    --text-secondary: #A0A0B0;
+}
+
+body {
+    font-family: 'Inter', sans-serif; /* Body Text */
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+h1, h2, h3 {
+    font-family: 'Montserrat', sans-serif; /* Headings */
+    color: var(--text-primary);
+}
+
+.cms-card {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(74, 192, 255, 0.1); /* Subtle blue border */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.cms-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(74, 192, 255, 0.2);
+}
+
+/* Futuristic Accent Styles */
+.tab-active {
+    color: var(--accent-blue);
+    border-bottom: 2px solid var(--accent-blue);
+}
+
+.glow-input {
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+.glow-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(74, 192, 255, 0.3); /* Blue glow */
+}
+
+.btn-primary-glow {
+    background-color: var(--accent-blue);
+    box-shadow: 0 0 8px rgba(74, 192, 255, 0.5);
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+.btn-primary-glow:hover {
+    background-color: #6CD7FF; /* Slightly lighter blue */
+    box-shadow: 0 0 15px rgba(74, 192, 255, 0.8);
+    transform: translateY(-1px);
+}
+
+/* Sticky Header for better access */
+.cms-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background-color: rgba(15, 17, 26, 0.95); /* Semi-transparent background */
+    backdrop-filter: blur(5px);
+    border-bottom: 1px solid rgba(74, 192, 255, 0.1);
+    padding: 1rem 2rem;
+}
+
+/* Custom scrollbar for aesthetics */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }

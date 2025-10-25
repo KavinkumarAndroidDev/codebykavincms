@@ -1,0 +1,21 @@
+{
+  "name": "CodeByKavinCMS – Explore My Creations",
+  "short_name": "CodeByKavinCMS",
+  "description": "Discover fun, productivity, and experimental apps built by Kavin.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F111A",
+  "theme_color": "#1E1E2F",
+  "icons": [
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

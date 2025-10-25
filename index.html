@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeByKavin CMS Dashboard</title>
+       <!-- Favicon Links -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="icon" href="/assets/favicon.png">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons (Loading UMD build directly for global scope) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Load Cropper.js for image editing -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <!-- Link to external stylesheet -->
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <!-- Load SortableJS for drag-and-drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+</head>
+<body class="min-h-screen">
+
+    <!-- Global Message/Alert Box -->
+    <div id="message-container" class="fixed top-4 right-4 z-50 w-full max-w-sm"></div>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="flex flex-col items-center justify-center min-h-screen">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-400"></div>
+        <p class="mt-4 text-gray-400">Initializing CMS and authentication...</p>
+    </div>
+
+    <!-- Authentication Screen -->
+    <div id="auth-screen" class="hidden flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="cms-card p-8 rounded-2xl w-full max-w-md space-y-6 border border-blue-800 shadow-xl">
+            <h2 class="text-3xl font-bold text-white text-center">Admin Login</h2>
+            <form id="auth-form" class="space-y-4">
+                <div>
+                    <label for="auth-email" class="block text-sm font-medium text-gray-300">Email</label>
+                    <input type="email" id="auth-email" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 glow-input">
+                </div>
+                <div>
+                    <label for="auth-password" class="block text-sm font-medium text-gray-300">Password</label>
+                    <input type="password" id="auth-password" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white focus:ring-blue-500 focus:border-blue-500 glow-input">
+                </div>
+                <button type="submit" id="auth-submit-btn" class="w-full py-3 text-white rounded-lg font-semibold btn-primary-glow">
+                    Sign In
+                </button>
+            </form>
+            <button onclick="handleAuthToggle()" id="auth-toggle-btn" class="w-full text-sm text-gray-400 hover:text-white transition">
+                Need an account? Click here to Sign Up.
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Main CMS Content -->
+    <div id="app-container" class="hidden flex-col w-full">
+        <!-- Sticky Header -->
+        <header class="cms-header flex justify-between items-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+                <span style="color:var(--accent-blue);">CodeByKavin</span> CMS
+            </h1>
+            <div class="flex space-x-4 items-center">
+                <button onclick="openAppModal()" id="add-app-button" class="flex items-center space-x-2 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition duration-150 ease-in-out btn-primary-glow">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    <span class="hidden sm:inline">Add New App</span>
+                </button>
+                <button onclick="handleSignOut()" class="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition duration-150 ease-in-out">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                    <span class="hidden sm:inline">Sign Out</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="container mx-auto p-4 md:p-8">
+            <!-- Tab Navigation -->
+            <nav class="flex space-x-6 mb-8 border-b border-gray-700">
+                <button id="tab-apps" class="pb-2 text-lg font-semibold text-gray-400 hover:text-white transition tab-active" onclick="switchTab('apps')">
+                    Apps Manager
+                </button>
+                <button id="tab-profile" class="pb-2 text-lg font-semibold text-gray-400 hover:text-white transition" onclick="switchTab('profile')">
+                    Developer Profile
+                </button>
+            </nav>
+            
+            <!-- App Manager Section -->
+            <section id="apps-section" class="space-y-6">
+                <div id="apps-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- App Cards will be rendered here -->
+                </div>
+
+                <p id="empty-state" class="hidden text-center text-gray-500 mt-10 p-6 border-2 border-dashed border-gray-700 rounded-xl">No apps found. Click "Add New App" to start adding content.</p>
+            </section>
+
+            <!-- Developer Profile Section (Initially Hidden) -->
+            <section id="profile-section" class="space-y-6 hidden max-w-3xl mx-auto">
+                <h2 class="text-2xl font-bold text-white mb-4">Edit Developer Profile</h2>
+                <div class="cms-card p-6 rounded-xl">
+                    <form id="profile-form" class="space-y-4">
+
+                        <!-- Name & Age -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="profile-name" class="block text-sm font-medium text-gray-300">Your Name</label>
+                                <input type="text" id="profile-name" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                            <div>
+                                <label for="profile-age" class="block text-sm font-medium text-gray-300">Age</label>
+                                <input type="number" id="profile-age" min="1" class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                        </div>
+
+                        <!-- City & Phone -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="profile-city" class="block text-sm font-medium text-gray-300">City/Location</label>
+                                <input type="text" id="profile-city" class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                            <div>
+                                <label for="profile-phone" class="block text-sm font-medium text-gray-300">Phone</label>
+                                <input type="tel" id="profile-phone" class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                        </div>
+
+                        <!-- Email (Uses 'email' field as per schema) -->
+                        <div>
+                            <label for="profile-email" class="block text-sm font-medium text-gray-300">Contact Email</label>
+                            <input type="email" id="profile-email" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                        </div>
+
+                        <!-- Bio -->
+                        <div>
+                            <label for="profile-bio" class="block text-sm font-medium text-gray-300">Bio ("My Journey" Text)</label>
+                            <textarea id="profile-bio" rows="4" class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input"></textarea>
+                        </div>
+
+                        <!-- Skills (Comma separated) -->
+                        <div>
+                            <label for="profile-skills" class="block text-sm font-medium text-gray-300">Skills (Comma-separated tags)</label>
+                            <input type="text" id="profile-skills" placeholder="e.g., JavaScript, React, Firebase, Python" class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                        </div>
+
+                        <!-- Links (Comma separated URLs) -->
+                        <div>
+                            <label for="profile-links" class="block text-sm font-medium text-gray-300">Social Links (Comma-separated URLs)</label>
+                            <input type="text" id="profile-links" placeholder="e.g., https://github.com/kavin, https://linkedin.com/in/kavin" class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                        </div>
+
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" id="profile-submit-btn" class="py-2 px-6 text-white rounded-lg font-semibold btn-primary-glow">
+                                Save Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Profile Picture Upload -->
+                <div class="cms-card p-6 rounded-xl">
+                    <h3 class="text-lg font-semibold text-white mb-4">Profile Picture</h3>
+                    <div class="flex flex-col items-center space-y-4">
+                        <div class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden border-2 border-gray-600">
+                            <img id="profile-image-preview" src="https://placehold.co/128x128/1E1E2F/4AC0FF?text=No+Image" alt="Profile Preview" class="w-full h-full object-cover">
+                        </div>
+                        <input type="file" id="profile-image-upload" accept="image/png, image/jpeg, image/webp" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <div id="profile-upload-progress-container" class="w-full bg-gray-600 rounded-full h-2.5 mt-3 hidden">
+                            <div id="profile-upload-progress-bar" class="bg-accent-blue h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" id="delete-profile-image-btn" class="py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition duration-150" disabled>
+                                <i data-lucide="trash-2" class="w-4 h-4 inline-block mr-2"></i> Delete Picture
+                            </button>
+                            <button type="button" id="cancel-profile-upload-btn" class="py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition duration-150 hidden">
+                                Cancel Upload
+                            </button>
+                        </div>
+                        <p id="profile-image-status" class="text-xs text-gray-500">Upload a new profile picture (max 2MB).</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- App Management Modal (Existing) -->
+    <div id="app-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-40 p-4 transition-opacity duration-300" onclick="if(event.target.id === 'app-modal') closeAppModal()">
+        <div class="bg-gray-800 rounded-2xl w-full max-w-3xl shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+            <div class="p-6 pb-0">
+                <h2 id="modal-title" class="text-2xl font-bold text-white mb-4">Add New App</h2>
+
+                <!-- Modal Tab Navigation -->
+                <div class="border-b border-gray-700">
+                    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                        <button id="modal-tab-details" onclick="switchModalTab('details')" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-accent-blue border-accent-blue">
+                            App Details
+                        </button>
+                        <button id="modal-tab-changelog" onclick="switchModalTab('changelog')" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-500">
+                            Changelog
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <form id="app-form" class="flex-grow overflow-y-auto p-6 space-y-4">
+                <input type="hidden" id="app-id">
+
+                <div id="modal-details-section" class="space-y-4">
+
+                    <!-- Section 1: Core Info -->
+                    <div class="space-y-4 border-b border-gray-700 pb-6">
+                        <h3 class="text-lg font-semibold text-accent-blue">Core Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-300">App Name</label>
+                                <input type="text" id="name" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                            <div>
+                                <label for="tagline" class="block text-sm font-medium text-gray-300">Tagline</label>
+                                <input type="text" id="tagline" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-300">Full Description</label>
+                            <textarea id="description" rows="4" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Classification & Stats -->
+                    <div class="space-y-4 border-b border-gray-700 pb-6">
+                        <h3 class="text-lg font-semibold text-accent-blue">Classification & Stats</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="icon" class="block text-sm font-medium text-gray-300">Icon</label>
+                                <select id="icon" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input"></select>
+                            </div>
+                            <div>
+                                <label for="categoryRef" class="block text-sm font-medium text-gray-300">Category</label>
+                                <select id="categoryRef" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                                    <option value="productivity">Productivity</option>
+                                    <option value="fun">Fun</option>
+                                    <option value="tools">Tools</option>
+                                    <option value="experiments">Experiments</option>
+                                    <option value="misc">Misc</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label for="version" class="block text-sm font-medium text-gray-300">Version</label>
+                                <input type="text" id="version" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                            <div>
+                                <label for="rating" class="block text-sm font-medium text-gray-300">Rating (0-5)</label>
+                                <input type="number" id="rating" step="0.1" min="0" max="5" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                            <div>
+                                <label for="downloads" class="block text-sm font-medium text-gray-300">Downloads</label>
+                                <input type="number" id="downloads" min="0" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                             <div>
+                                <label for="releaseDate" class="block text-sm font-medium text-gray-300">Release Date</label>
+                                <input type="date" id="releaseDate" required class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                        </div>
+                         <div class="flex items-center pt-2">
+                            <input id="isFeatured" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-accent-blue focus:ring-accent-blue">
+                            <label for="isFeatured" class="ml-3 block text-sm text-gray-300">Set as Featured App</label>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Links & Media -->
+                    <div class="space-y-4 border-b border-gray-700 pb-6">
+                        <h3 class="text-lg font-semibold text-accent-blue">Links & Media</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="apkUrl" class="block text-sm font-medium text-gray-300">APK Download URL</label>
+                                <input type="url" id="apkUrl" placeholder="https://.../app.apk" class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                            <div>
+                                <label for="playStoreUrl" class="block text-sm font-medium text-gray-300">Play Store URL</label>
+                                <input type="url" id="playStoreUrl" placeholder="https://play.google.com/..." class="mt-1 block w-full border border-gray-600 rounded-lg shadow-sm p-3 bg-gray-700 text-white glow-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Screenshot Management -->
+                    <div id="screenshot-manager-section" class="space-y-4">
+                        <h3 class="text-lg font-semibold text-accent-blue">Screenshot Management</h3>
+                        <!-- Screenshot Upload Area -->
+                        <div class="bg-gray-900/50 p-4 rounded-lg">
+                            <label for="screenshot-upload" class="block text-sm font-medium text-gray-300 mb-2">Upload New Screenshots</label>
+                            <input type="file" id="screenshot-upload" multiple accept="image/png, image/jpeg, image/webp" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50" disabled>
+                            <div id="upload-progress-container" class="w-full bg-gray-600 rounded-full h-2.5 mt-3 hidden">
+                                <div id="upload-progress-bar" class="bg-accent-blue h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                            <p id="upload-disabled-message" class="text-xs text-gray-500 mt-2">Save the app first to enable screenshot uploads.</p>
+                        </div>
+                        <!-- Existing Screenshots Gallery -->
+                        <h4 class="text-md font-semibold text-gray-300 pt-2">Current Screenshots</h4>
+                        <div id="screenshots-gallery" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <p class="col-span-full text-sm text-gray-500">Drag and drop thumbnails to reorder.</p>
+                            <!-- Thumbnails will be rendered here -->
+                        </div>
+                        <!-- Hidden input for legacy data, no longer primary -->
+                        <input type="hidden" id="screenshots">
+                    </div>
+                </div>
+
+                <!-- Changelog Management Section -->
+                <div id="modal-changelog-section" class="hidden space-y-4">
+                    <h3 class="text-lg font-semibold text-white">Changelog Management</h3>
+                    
+                    <!-- Changelog Input -->
+                    <div class="bg-gray-900/50 p-4 rounded-lg space-y-2">
+                        <div class="flex space-x-2">
+                            <input type="text" id="changelog-version" placeholder="Version (e.g., 1.0.1)" class="w-1/3 border border-gray-600 rounded-lg p-2 bg-gray-700 text-white text-sm glow-input">
+                            <input type="date" id="changelog-date" class="w-1/3 border border-gray-600 rounded-lg p-2 bg-gray-700 text-white text-sm glow-input">
+                            <input type="text" id="changelog-notes" placeholder="Update notes..." class="w-full border border-gray-600 rounded-lg p-2 bg-gray-700 text-white text-sm glow-input">
+                            <button type="button" onclick="addChangelogEntry()" class="flex-shrink-0 text-white py-2 px-4 rounded-lg text-sm btn-primary-glow bg-green-600 hover:bg-green-700">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Changelog List -->
+                    <ul id="changelog-list" class="space-y-2 max-h-60 overflow-y-auto pr-2 bg-gray-900/50 p-4 rounded-lg">
+                        <!-- Changelog items render here -->
+                    </ul>
+                </div>
+            </form>
+            <!-- Footer Buttons (moved outside the form for fixed positioning) -->
+            <div class="p-6 pt-4 mt-auto border-t border-gray-700 bg-gray-800 flex justify-end space-x-3">
+                <button type="button" onclick="closeAppModal()" class="py-2 px-4 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700 transition duration-150">Cancel</button>
+                <button type="submit" form="app-form" id="modal-submit-btn" class="py-2 px-4 text-white rounded-lg font-semibold btn-primary-glow">Save App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Destructive Action Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
+            <h2 class="text-xl font-bold text-red-500 p-4 border-b border-gray-700">Confirm Deletion</h2>
+            <div class="p-4 space-y-4">
+                <p id="confirm-modal-text" class="text-gray-300">To confirm, please type the name of the app below.</p>
+                <p class="text-center font-mono text-lg text-yellow-400" id="confirm-modal-name"></p>
+                <input type="text" id="confirm-modal-input" class="w-full border border-gray-600 rounded-lg p-3 bg-gray-700 text-white glow-input" autocomplete="off">
+            </div>
+            <div class="p-4 border-t border-gray-700 flex justify-end space-x-3">
+                <button type="button" id="confirm-modal-cancel" class="py-2 px-4 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700 transition">Cancel</button>
+                <button type="button" id="confirm-modal-confirm" class="py-2 px-4 text-white rounded-lg font-semibold bg-red-600 hover:bg-red-700 transition" disabled>Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Cropper Modal -->
+    <div id="cropper-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+            <h2 class="text-xl font-bold text-white p-4 border-b border-gray-700">Crop Profile Picture</h2>
+            <div class="p-4 flex-grow">
+                <div class="w-full h-64 md:h-96 bg-black">
+                    <img id="cropper-image" src="" alt="Image to crop">
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-700 flex justify-end space-x-3">
+                <button type="button" id="cropper-cancel-btn" class="py-2 px-4 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700 transition">Cancel</button>
+                <button type="button" id="cropper-save-btn" class="py-2 px-4 text-white rounded-lg font-semibold btn-primary-glow">Crop & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module" src="/js/main.js"></script>
+</body>
+</html>
