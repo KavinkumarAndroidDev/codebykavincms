@@ -179,7 +179,7 @@ window.handleSignOut = handleSignOut;
 const initializeFirebase = async () => {
     try {
         // 1. Initialize Firebase
-        app = initializeApp(firebaseConfig);
+        const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
         storage = getStorage(app);
