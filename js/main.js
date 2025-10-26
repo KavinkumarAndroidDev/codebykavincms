@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
-import { getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection, query, serverTimestamp, setLogLevel, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, addDoc, setDoc, deleteDoc, onSnapshot, collection, query, serverTimestamp, setLogLevel, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- Global Firebase and Application Setup ---
 // Setting Firebase log level for debugging
@@ -724,8 +724,39 @@ const deleteApp = async (docId, appName) => {
         `This action cannot be undone. This will permanently delete the app "${appName}" and all of its data, including changelogs and screenshots. Please type the app's name to confirm.`,
         appName,
         async () => {
-            await deleteDoc(doc(db, AppsCollection, docId));
-            alertMessage(`App "${appName}" deleted successfully.`, 'success');
+            try {
+                const appRef = doc(db, AppsCollection, docId);
+                const appSnap = await getDoc(appRef);
+
+                if (!appSnap.exists()) {
+                    alertMessage(`App "${appName}" not found. It may have already been deleted.`, 'info');
+                    return;
+                }
+
+                const appData = appSnap.data();
+
+                // 1. Delete changelog subcollection
+                const changelogPath = `${AppsCollection}/${docId}/changelog`;
+                const changelogQuery = query(collection(db, changelogPath));
+                const changelogSnapshot = await getDocs(changelogQuery);
+                const deleteChangelogPromises = changelogSnapshot.docs.map(logDoc => deleteDoc(logDoc.ref));
+                await Promise.all(deleteChangelogPromises);
+                console.log(`Deleted ${changelogSnapshot.size} changelog entries for ${appName}.`);
+
+                // 2. Delete screenshots from Storage
+                if (appData.screenshots && appData.screenshots.length > 0) {
+                    const deleteScreenshotPromises = appData.screenshots.map(url => deleteObject(ref(storage, url)));
+                    await Promise.all(deleteScreenshotPromises);
+                    console.log(`Deleted ${appData.screenshots.length} screenshots for ${appName}.`);
+                }
+
+                // 3. Delete the main app document
+                await deleteDoc(appRef);
+                alertMessage(`App "${appName}" and all its data deleted successfully.`, 'success');
+            } catch (error) {
+                console.error(`Error deleting app "${appName}":`, error);
+                alertMessage(`Failed to delete app: ${error.message}`, 'error');
+            }
         }
     );
 };
