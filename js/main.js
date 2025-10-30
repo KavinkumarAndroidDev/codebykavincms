@@ -35,7 +35,7 @@ let PUBLIC_BASE, AppsCollection, DeveloperProfileDoc;
 
 // Curated list of useful Lucide icons for the dropdown
 const lucideIconOptions = [
-    'rocket', 'gamepad-2', 'check-circle', 'wrench', 'flask-conical', 'layout-grid', 'package', 'star',
+    'rocket','croissant','badge-indian-rupee', 'gamepad-2', 'check-circle', 'wrench', 'flask-conical', 'layout-grid', 'package', 'star',
     'calendar-check', 'droplets', 'terminal', 'code', 'book', 'camera', 'cloud', 'database', 'file-text',
     'folder', 'globe', 'heart', 'image', 'mail', 'message-square', 'music', 'pen-tool', 'shield', 'shopping-cart', 'video', 'bug', 'cpu', 'fingerprint', 'lightbulb', 'map', 'monitor', 'mouse', 'network', 'pie-chart', 'plug', 'power', 'printer', 'qr-code', 'rss', 'server', 'settings', 'share-2', 'shield-check', 'smartphone', 'speaker', 'square', 'tablet', 'tag', 'target', 'thermometer', 'thumbs-up', 'toggle-left', 'tool', 'trending-up', 'tv', 'type', 'umbrella', 'upload', 'user', 'users', 'verified', 'volume-2', 'wallet', 'wifi', 'zap'
 ];
