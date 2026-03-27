@@ -17,6 +17,10 @@ const firebaseConfig = {
   appId: "@@FIREBASE_APP_ID@@"
 };
 
+// Alignment with the public site's "emerald" primary color
+document.documentElement.style.setProperty('--accent-blue', '#10b981'); 
+document.documentElement.style.setProperty('--accent-glow', 'rgba(16, 185, 129, 0.4)');
+
 
 let app, db, auth, storage;
 let isAuthReady = false;
@@ -225,7 +229,7 @@ const renderRating = (rating) => {
         } else if (i === fullStars && halfStar) {
             stars += `<i data-lucide="star-half" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>`;
         } else {
-            stars += `<i data-lucide="star" class="w-4 h-4 text-gray-600"></i>`;
+            stars += `<i data-lucide="star" class="w-4 h-4 text-emerald-400"></i>`;
         }
     }
     return stars;
